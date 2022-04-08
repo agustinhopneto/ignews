@@ -50,6 +50,42 @@ export default NextAuth({
       } catch {
         return false;
       }
-    }
+    },
+    async session({ session }) {      
+      try {
+        const userActiveSubscription = await fauna.query(
+          q.Get(
+            q.Intersection([
+              q.Match(
+                q.Index(FaunaIndexes.SUBSCRIPTION_BY_USER_REF),
+                q.Select(
+                  'ref',
+                  q.Get(
+                    q.Match(
+                      q.Index(FaunaIndexes.USER_BY_EMAIL),
+                      q.Casefold(session.user.email),
+                    ),
+                  ),
+                ),
+              ),
+              q.Match(
+                q.Index(FaunaIndexes.SUBSCRIPTION_BY_STATUS),
+                'active'
+              ),
+            ]),
+          ),
+        );
+        
+        return {
+          ...session,
+          activeSubscription: userActiveSubscription,
+        }
+      } catch (error) {        
+        return {
+          ...session,
+          activeSubscription: null,
+        }
+      }
+    },
   }
 })
