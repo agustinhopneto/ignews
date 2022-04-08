@@ -23,11 +23,11 @@ export type Post = {
   updatedAt: string;
 }
 
-type PostProps = {
+type PostsProps = {
   posts: Post[];
 }
 
-export default function Posts({ posts }: PostProps) {
+export default function Posts({ posts }: PostsProps) {
   return (
     <>
       <Head>
@@ -70,7 +70,7 @@ export const getStaticProps: GetStaticProps = async () => {
         day: '2-digit',
         month: 'long',
         year: 'numeric',
-      })
+      }),
     }
   });
   
