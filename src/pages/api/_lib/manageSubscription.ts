@@ -6,6 +6,7 @@ import { FaunaIndexes } from "./contants";
 export async function saveSubscription(
   subscriptionId: string,
   customerId: string,
+  createAction = false,
 ) {
   const userRef = await fauna.query(
     q.Select(
@@ -28,10 +29,29 @@ export async function saveSubscription(
     price_id: subscription.items.data[0].price.id,
   }
 
+  if (createAction) {
+    await fauna.query(
+      q.Create(
+        q.Collection('subscriptions'),
+        { data: subscriptionData }
+      ),
+    );
+
+    return;
+  }
+
   await fauna.query(
-    q.Create(
-      q.Collection('subscriptions'),
+    q.Replace(
+      q.Select(
+        'ref',
+        q.Get(
+          q.Match(
+            q.Index('subscription_by_id'),
+            subscriptionId
+          )
+        )
+      ),
       { data: subscriptionData }
-    ),
-  );
+    )
+  )
 };
